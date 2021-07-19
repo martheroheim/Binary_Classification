@@ -5,12 +5,14 @@ from scipy.linalg import norm
 from spirals import get_data_spiral_2d
 from plotting import plot_progression 
 from IPython.display import Markdown, display
+
 def printmd(string):
     display(Markdown(string)) #For å kunne skrive ut i fet tekst
     
     
 def addMatVec(W, Y, b, k):
     return ((W[k,:,:]@Y[k,:,:]) + b[k,:])
+
 
 def yNext(Y, W, b, k): 
        return Y[k,:,:] + h*np.tanh(addMatVec(W,Y,b,k))
@@ -80,3 +82,20 @@ def vanilla(W,b,w,my):
     return U
 
 
+def adam(W,b,w,my,j, m, v):
+    U = np.array([W, b, w, my])
+    g = find_gradient(U) #Tar U, returnerer oppdatert U
+
+    beta_1=0.9
+    beta_2=0.999
+    alpha = 0.01            #steglengde  
+    epsilon = 1e-8        
+    g = find_gradient(U)
+    m = beta_1 * m + (1 - beta_1) * g     
+    v = beta_2 * v + (1 - beta_2) * (g*g)
+    m_hat = m / (1 - beta_1**j)
+    v_hat = v / (1 - beta_2**j)
+    for i in range(len(v_hat)): #tar sqrt(v_hat)
+        v_hat[i] = np.sqrt(v_hat[i])
+    U = U - alpha * m_hat / (v_hat + epsilon)
+    return U, m, v #returnerer m og v for å oppdatere disse
